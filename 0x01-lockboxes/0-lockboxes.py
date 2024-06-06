@@ -1,21 +1,65 @@
+#!/usr/bin/python3
+"""Solves the lock boxes puzzle """
+
+
+def look_next_opened_box(opened_boxes):
+    """Looks for the next opened box
+    Args:
+        opened_boxes (dict): Dictionary which contains boxes already opened
+    Returns:
+        list: List with the keys contained in the opened box
+    """
+    for index, box in opened_boxes.items():
+        if box.get('status') == 'opened':
+            box['status'] = 'opened/checked'
+            return box.get('keys')
+    return None
+
+
 def canUnlockAll(boxes):
-    # Set of opened boxes: Box 1 is opened by default
-    opened_boxes = set([0])
-    # Stack
-    stack = [0]
+    """Check if all boxes can be opened
+    Args:
+        boxes (list): List which contain all the boxes with the keys
+    Returns:
+        bool: True if all boxes can be opened, otherwise, False
+    """
+    if len(boxes) <= 1 or boxes == [[]]:
+        return True
 
-    # algorithm
-    while stack:
-        current_box = stack.pop()
-        print("Current box", current_box)
+    aux = {}
+    while True:
+        if len(aux) == 0:
+            aux[0] = {
+                'status': 'opened',
+                'keys': boxes[0],
+            }
+        keys = look_next_opened_box(aux)
+        if keys:
+            for key in keys:
+                try:
+                    if aux.get(key) and aux.get(key).get('status') \
+                       == 'opened/checked':
+                        continue
+                    aux[key] = {
+                        'status': 'opened',
+                        'keys': boxes[key]
+                    }
+                except (KeyError, IndexError):
+                    continue
+        elif 'opened' in [box.get('status') for box in aux.values()]:
+            continue
+        elif len(aux) == len(boxes):
+            break
+        else:
+            return False
 
-        # Iteration
-        for key in boxes[current_box]:
-            if key not in opened_boxes and key < len(boxes):
-                opened_boxes.add(key)
-                stack.append(key)
-    return len(opened_boxes) == len(boxes)
+    return len(aux) == len(boxes)
 
 
-boxes = [[1, 4], [2], [0, 4, 1], [3], [], [4, 1], [5, 6]]
-print(canUnlockAll(boxes))
+def main():
+    """Entry point"""
+    canUnlockAll([[]])
+
+
+if __name__ == '__main__':
+    main()
